@@ -1,10 +1,9 @@
 services:
   # ----------------------------
-  # MariaDB Database
+  # MariaDB (shared database)
   # ----------------------------
   mariadb:
     image: mariadb:11
-    container_name: shared_mariadb
     restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
@@ -14,23 +13,29 @@ services:
       - shared_db_net
 
   # ----------------------------
-  # phpMyAdmin (Apache container)
+  # phpMyAdmin (Apache)
   # ----------------------------
   phpmyadmin:
     build:
       context: ./phpmyadmin-dockerfile
-    image: phpmyadmin:latest
-    container_name: shared_phpmyadmin
+    restart: unless-stopped
     environment:
       PMA_HOST: mariadb
+      PMA_PORT: 3306
     expose:
-      - "80"
+      - "80"   # Dokploy / reverse proxy only
     networks:
       - shared_db_net
 
+# ----------------------------
+# Persistent Volumes
+# ----------------------------
 volumes:
   shared_mariadb_data:
 
+# ----------------------------
+# External Shared Network
+# ----------------------------
 networks:
   shared_db_net:
-    driver: bridge
+    external: true
