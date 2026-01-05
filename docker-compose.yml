@@ -1,0 +1,36 @@
+services:
+  # ----------------------------
+  # MariaDB Database
+  # ----------------------------
+  mariadb:
+    image: mariadb:11
+    container_name: shared_mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
+    volumes:
+      - shared_mariadb_data:/var/lib/mysql
+    networks:
+      - shared_db_net
+
+  # ----------------------------
+  # phpMyAdmin (Apache container)
+  # ----------------------------
+  phpmyadmin:
+    build:
+      context: ./phpmyadmin-dockerfile
+    image: phpmyadmin:latest
+    container_name: shared_phpmyadmin
+    environment:
+      PMA_HOST: mariadb
+    expose:
+      - "80"
+    networks:
+      - shared_db_net
+
+volumes:
+  shared_mariadb_data:
+
+networks:
+  shared_db_net:
+    driver: bridge
